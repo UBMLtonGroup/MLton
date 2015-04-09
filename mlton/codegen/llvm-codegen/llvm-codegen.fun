@@ -579,6 +579,8 @@ and getOperandValue (cxt, operand) =
             end
           | Operand.Contents _ => loadOperand ()
           | Operand.Frontier => loadOperand ()
+          | Operand.UMFrontier => Error.bug ("codegen.llvm-codegen.getoperand: unimplemented")
+          | Operand.ChunkedOffset _ => Error.bug ("codegen.llvm-codegen.getoperand: ChunkedOffset unimplemented in LLVM")
           | Operand.GCState =>
             let
                 val reg = nextLLVMReg ()
@@ -1567,4 +1569,3 @@ fun output {program, outputC, outputLL} =
     end
 
 end
-
