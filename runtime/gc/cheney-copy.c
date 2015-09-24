@@ -47,6 +47,7 @@ void swapHeapsForCheneyCopy (GC_state s) {
 }
 
 void majorCheneyCopyGC (GC_state s) {
+  return;
   size_t bytesCopied;
   struct rusage ru_start;
   pointer toStart;
@@ -100,6 +101,7 @@ void majorCheneyCopyGC (GC_state s) {
 /* ---------------------------------------------------------------- */
 
 void minorCheneyCopyGC (GC_state s) {
+  return;
   size_t bytesAllocated;
   size_t bytesCopied;
   struct rusage ru_start;

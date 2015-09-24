@@ -167,7 +167,7 @@ void performGC (GC_state s,
                 size_t nurseryBytesRequested,
                 bool forceMajor,
                 bool mayResize) {
-//return;
+return;
 
     /* In our two-thread formulation of realtime MLton, the zeroth thread runs
      * ML code, which will sometimes call the performGC function (this
@@ -216,6 +216,7 @@ void performGC_helper (GC_state s,
   struct rusage ru_start;
   size_t totalBytesRequested;
 
+  return;
   DBG((stderr, "\t\t%x] in performGC_helper\n", pthread_self()));
 
   enterGC (s);
@@ -337,7 +338,7 @@ void ensureHasHeapBytesFree (GC_state s,
 
 void GC_collect (GC_state s, size_t bytesRequested, bool force) {
 	//fprintf(stderr, "GC_collect called from %d\n", PTHREAD_NUM);
-	//return;
+	return;
   enter (s);
   /* When the mutator requests zero bytes, it may actually need as
    * much as GC_HEAP_LIMIT_SLOP.

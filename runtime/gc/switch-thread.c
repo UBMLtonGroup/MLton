@@ -38,9 +38,9 @@ void GC_switchToThread (GC_state s, pointer p, size_t ensureBytesFree) {
     switchToThread (s, pointerToObjptr(p, s->heap.start));
     s->atomicState--;
     switchToSignalHandlerThreadIfNonAtomicAndSignalPending (s);
-    ensureInvariantForMutator (s, FALSE);
-    assert (invariantForMutatorFrontier(s));
-    assert (invariantForMutatorStack(s));
+   // ensureInvariantForMutator (s, FALSE);
+    //assert (invariantForMutatorFrontier(s));
+   // assert (invariantForMutatorStack(s));
     leave (s);
   } else {
     /* BEGIN: enter(s); */
@@ -52,17 +52,18 @@ void GC_switchToThread (GC_state s, pointer p, size_t ensureBytesFree) {
     switchToThread (s, pointerToObjptr(p, s->heap.start));
     s->atomicState--;
     switchToSignalHandlerThreadIfNonAtomicAndSignalPending (s);
+    
     /* BEGIN: ensureInvariantForMutator */
-    if (not (invariantForMutatorFrontier(s))
-        or not (invariantForMutatorStack(s))) {
-      /* This GC will grow the stack, if necessary. */
-      performGC (s, 0, getThreadCurrent(s)->bytesNeeded, FALSE, TRUE);
-    }
+   // if (not (invariantForMutatorFrontier(s))
+     //   or not (invariantForMutatorStack(s))) {
+     // performGC (s, 0, getThreadCurrent(s)->bytesNeeded, FALSE, TRUE);
+    //}
     /* END: ensureInvariantForMutator */
     /* BEGIN: leave(s); */
     endAtomic (s);
     /* END: leave(s); */
   }
-  assert (invariantForMutatorFrontier(s));
-  assert (invariantForMutatorStack(s));
+  //assert (invariantForMutatorFrontier(s));
+  //assert (invariantForMutatorStack(s));
 }
+

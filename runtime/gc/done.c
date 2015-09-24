@@ -41,7 +41,7 @@ void GC_done (GC_state s) {
   FILE *out;
 
   enter (s);
-  minorGC (s);
+//  minorGC (s);
   out = stderr;
   if (s->controls.summary) {
     struct rusage ru_total;

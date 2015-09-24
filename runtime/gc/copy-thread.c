@@ -12,7 +12,6 @@ GC_thread copyThread (GC_state s, GC_thread from, size_t used) {
 
   if (DEBUG_THREADS)
     fprintf (stderr, "copyThread ("FMTPTR") my_pthread=%u\n", (uintptr_t)from, PTHREAD_NUM);
-
   /* newThread may do a GC, which invalidates from.
    * Hence we need to stash from someplace that the GC can find it.
    */
@@ -42,14 +41,14 @@ void GC_copyCurrentThread (GC_state s) {
 
   if (DEBUG_THREADS)
     fprintf (stderr, "GC_copyCurrentThread\n");
-  enter (s);
+  //enter (s);
   fromThread = (GC_thread)(objptrToPointer(s->currentThread[PTHREAD_NUM], s->heap.start)
                            + offsetofThread (s));
   fromStack = (GC_stack)(objptrToPointer(fromThread->stack, s->heap.start));
   toThread = copyThread (s, fromThread, fromStack->used);
   toStack = (GC_stack)(objptrToPointer(toThread->stack, s->heap.start));
-  assert (toStack->reserved == alignStackReserved (s, toStack->used));
-  leave (s);
+  //assert (toStack->reserved == alignStackReserved (s, toStack->used));
+  //leave (s);
   if (DEBUG_THREADS)
     fprintf (stderr, FMTPTR" = GC_copyCurrentThread\n", (uintptr_t)toThread);
   assert (s->savedThread[PTHREAD_NUM] == BOGUS_OBJPTR);
@@ -64,13 +63,13 @@ pointer GC_copyThread (GC_state s, pointer p) {
 
   if (DEBUG_THREADS)
     fprintf (stderr, "GC_copyThread ("FMTPTR", pthread=%u)\n", (uintptr_t)p, PTHREAD_NUM);
-  enter (s);
+ // enter (s);
   fromThread = (GC_thread)(p + offsetofThread (s));
   fromStack = (GC_stack)(objptrToPointer(fromThread->stack, s->heap.start));
   toThread = copyThread (s, fromThread, fromStack->used);
   toStack = (GC_stack)(objptrToPointer(toThread->stack, s->heap.start));
-  assert (toStack->reserved == alignStackReserved (s, toStack->used));
-  leave (s);
+  //assert (toStack->reserved == alignStackReserved (s, toStack->used));
+ //eave (s);
   if (DEBUG_THREADS)
     fprintf (stderr, FMTPTR" = GC_copyThread ("FMTPTR")\n", 
              (uintptr_t)toThread, (uintptr_t)fromThread);

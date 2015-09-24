@@ -12,9 +12,13 @@
  * invariant.
  */
 void enter (GC_state s) {
+
   if (DEBUG)
     fprintf (stderr, "enter\n");
   /* used needs to be set because the mutator has changed s->stackTop. */
+
+  return;
+  
   getStackCurrent(s)->used = sizeofGCStateCurrentStackUsed (s);
   getThreadCurrent(s)->exnStack = s->exnStack[PTHREAD_NUM];
   if (DEBUG) 
@@ -28,6 +32,8 @@ void enter (GC_state s) {
 void leave (GC_state s) {
   if (DEBUG)
     fprintf (stderr, "leave\n");
+
+  return;
   /* The mutator frontier invariant may not hold
    * for functions that don't ensureBytesFree.
    */

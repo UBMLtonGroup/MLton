@@ -99,9 +99,12 @@ void initWorld (GC_state s) {
   for (i = 0; i < s->globalsLength; ++i)
     s->globals[i] = BOGUS_OBJPTR;
   s->lastMajorStatistics.bytesLive = sizeofInitialBytesLive (s);
+  //createHeap (s, &s->heap,
+    //          sizeofHeapDesired (s, s->lastMajorStatistics.bytesLive, 0),
+      //        s->lastMajorStatistics.bytesLive);
   createHeap (s, &s->heap,
-              sizeofHeapDesired (s, s->lastMajorStatistics.bytesLive, 0),
-              s->lastMajorStatistics.bytesLive);
+              1024*1024*1024,
+              1024*1024*1024);
   setCardMapAndCrossMap (s);
   start = alignFrontier (s, s->heap.start);
   s->frontier = start;
@@ -112,7 +115,8 @@ void initWorld (GC_state s) {
   s->heap.oldGenSize = (size_t)(s->frontier - s->heap.start);
   setGCStateCurrentHeap (s, 0, 0);
 
-  thread = newThread (s, sizeofStackInitialReserved (s)); // defaults to pri 0
+  //thread = newThread (s, sizeofStackInitialReserved (s)); // defaults to pri 0
 
+  thread = newThread (s,alignStackReserved(s,1024*1024*100)); // defaults to pri 0
   switchToThread (s, pointerToObjptr((pointer)thread - offsetofThread (s), s->heap.start));
 }

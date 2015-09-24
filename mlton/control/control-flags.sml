@@ -836,7 +836,7 @@ val loopPasses = control {name = "loop passes",
                           toString = Int.toString}
 
 val markCards = control {name = "mark cards",
-                         default = true,
+                         default = false,
                          toString = Bool.toString}
 
 val maxFunctionSize = control {name = "max function size",

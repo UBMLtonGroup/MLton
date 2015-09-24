@@ -51,7 +51,7 @@ pointer getStackTop (GC_state s, GC_stack stack) {
   pointer res;
 
   res = getStackBottom (s, stack) + stack->used;
-  assert (isAligned ((size_t)res, s->alignment));
+  //assert (isAligned ((size_t)res, s->alignment));
   return res;
 }
 
@@ -235,5 +235,6 @@ void copyStack (GC_state s, GC_stack from, GC_stack to) {
              (uintptr_t)fromBottom,
              (uintptr_t)toBottom,
              (uintmax_t)from->used);
-  GC_memcpy (fromBottom, toBottom, from->used);
+  to->reserved = from->reserved;
+  GC_memcpy (fromBottom, toBottom, from->reserved);
 }
