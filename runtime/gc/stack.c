@@ -51,7 +51,7 @@ pointer getStackTop (GC_state s, GC_stack stack) {
   pointer res;
 
   res = getStackBottom (s, stack) + stack->used;
-  //assert (isAligned ((size_t)res, s->alignment));
+// assert (isAligned ((size_t)res, s->alignment));
   return res;
 }
 
