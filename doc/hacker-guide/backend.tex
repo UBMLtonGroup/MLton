@@ -124,6 +124,88 @@ structure Transfer:
 \end{verbatim}
 
 \subsection{Packed Object Representation}
+Before going into how backend works, we'll need to understand how
+objects are represented in MLton. Historically, MLton has a flat
+object representation, but it's removed in favor of a packed object
+representation.
+
+The file \tt{mlton/backend/packed-representation.fun} returns a
+function that will convert SSA2 types into RSSA object
+representations and at the same time, it generates necessary routines
+for object tagging and pattern matching.
+
+In MLton, pointers are tagged with two bits to distinguish them from
+integers. MLton also distinguishes object pointers from non-object
+pointers (e.g. pointers to a single integer). For non-object pointers,
+MLton introduces small and big pointers. Small refers to addresses
+that can be represented in a single integer, while Big refers to those
+that cannot. This part of code is listed below:
+
+\begin{verbatim}
+  case rep of
+     Rep.NonObjptr =>
+        let
+           val i = Bits.toInt (Type.width ty)
+        in
+           if i >= objptrBitsAsInt ()
+              then makeBig ()
+           else
+              let
+                 val {component, selects} =
+                    case tr of
+                       TupleRep.Direct z => z
+                     | TupleRep.Indirect _ =>
+                          Error.bug "PackedRepresentation.TyconRep.make: small Indirect"
+                 val () = IntInf.inc numSmall
+                 val () =
+                    Array.update
+                    (small, i,
+                     {component = component,
+                      con = con,
+                      objptrTycon = objptrTycon,
+                      selects = selects}
+                     :: Array.sub (small, i))
+              in
+                 ()
+              end
+        end
+   | Rep.Objptr _ => makeBig ()
+\end{verbatim}
+
+Here the objptrBitsAsInt is a query into runtime constants:
+
+\begin{verbatim}
+ val objptrBytes = Runtime.objptrSize
+ val objptrBits = Promise.lazy (fn () => Bytes.toBits (objptrBytes ()))
+ val objptrBitsAsInt = Promise.lazy (fn () => Bits.toInt (objptrBits ()))
+\end{verbatim}
+
+The most important part of packed-representation is called
+``\tt{TupleRep}''. It basically summerizes they way object components
+glue together. Cited from the comments:
+
+\begin{verbatim}
+TupleRep.make decides how to layout a sequence of types in an object,
+or in the case of a vector, in a vector element.  Vectors are treated
+slightly specially because we don't require element widths to be a
+multiple of the word32 size.  At the front of the object, we place all
+the word64s, followed by all the word32s.  Then, we pack in all the
+types that are smaller than a word32.  This is done by packing in a
+sequence of words, greedily, starting with the largest type and moving
+to the smallest.  We pad to ensure that a value never crosses a word32
+boundary.  Finally, if there are any objptrs, they go at the end of
+the object. There is some extra logic here to specially represent
+(boxed) tuples that are entirely comprised of primitive types.  The
+primary motivation is that "word8 ref" and "word16 ref" are FFI types,
+and must have representations that are compatible with C.  In
+particular, on a big-endian platform, such sub-word32 components must
+be at the low byte offset (but high bit offset) of the containing
+word32.
+\end{verbatim}
+
+The selects generally correspond to Switch statement in C. It shifts
+object to a position and matches its type tag. Each representation has
+its own ways of unpack, but they are fairly straightforward.
 
 \subsection{Liveness}
 
