@@ -33,13 +33,27 @@
 
 #define WORDWIDTH 8 /* use gcState->alignment */
 
+#define NO_CACHE_STACK
+#define NO_CACHE_FRONTIER
+
 #define GCState ((Pointer)&gcState)
 #define ExnStack *(size_t*)(GCState + ExnStackOffset+(PTHREAD_NUM*WORDWIDTH) )
 #define FrontierMem *(Pointer*)(GCState + FrontierOffset)
+
+#ifndef NO_CACHE_FRONTIER
 #define Frontier frontier
-#define StackBottom *(Pointer*)(GCState + StackBottomOffset+(PTHREAD_NUM*WORDWIDTH) )
-#define StackTopMem *(Pointer*)(GCState + StackTopOffset+(PTHREAD_NUM*WORDWIDTH) )
+#else
+#define Frontier FrontierMem
+#endif
+
+#define StackBottom (*(Pointer*)(GCState + StackBottomOffset+(PTHREAD_NUM*WORDWIDTH)))
+#define StackTopMem (*(Pointer*)(GCState + StackTopOffset+(PTHREAD_NUM*WORDWIDTH)))
+
+#ifndef NO_CACHE_STACK
 #define StackTop stackTop
+#else
+#define StackTop StackTopMem
+#endif
 
 
 /* ------------------------------------------------- */
@@ -100,25 +114,41 @@
                 if (x) goto l;                                          \
         } while (0)
 
+#ifndef NO_CACHE_FRONTIER
 #define FlushFrontier()                         \
         do {                                    \
                 FrontierMem = Frontier;         \
         } while (0)
+#else
+#define FlushFrontier()
+#endif
 
+#ifndef NO_CACHE_STACK
 #define FlushStackTop()                         \
         do {                                    \
                 StackTopMem = StackTop;         \
         } while (0)
+#else
+#define FlushStackTop() 
+#endif
 
+#ifndef NO_CACHE_FRONTIER
 #define CacheFrontier()                         \
         do {                                    \
                 Frontier = FrontierMem;         \
         } while (0)
+#else
+#define CacheFrontier()
+#endif
 
+#ifndef NO_CACHE_STACK
 #define CacheStackTop()                         \
         do {                                    \
                 StackTop = StackTopMem;         \
         } while (0)
+#else
+#define CacheStackTop() 
+#endif
 
 /* ------------------------------------------------- */
 /*                       Chunk                       */
