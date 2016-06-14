@@ -28,6 +28,7 @@ set_pthread_num(uint32_t tid)
 {
     uint32_t *ptr;
 
+    fprintf(stderr, "store thread id %d\n", tid);
     (void) pthread_once(&key_once, make_key);
     if ((ptr = (uint32_t *)pthread_getspecific(key)) == NULL) {
         ptr = (uint32_t *)malloc(sizeof(uint32_t));

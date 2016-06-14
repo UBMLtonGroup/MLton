@@ -268,6 +268,7 @@ void performGC_helper (GC_state s,
   if (needGCTime (s))
     startTiming (&ru_start);
   minorGC (s);
+  fprintf(stderr, "GC:\tcheck stackTopOk");
   stackTopOk = invariantForMutatorStack (s);
   stackBytesRequested = 
     stackTopOk 
