@@ -105,7 +105,7 @@ void leaveGC (GC_state s) {
 #define THREADED
 
 pthread_mutex_t gcflag_lock;
-static volatile int gcflag;
+static volatile int gcflag = -1;
 
 #undef GCTHRDEBUG
 
@@ -124,10 +124,51 @@ static volatile int gcflag;
         }                                                        \
 }
 
+#define COPYIN(EL) s->EL[1] = s->EL[PTHREAD_NUM]
+#define COPYOUT(EL) s->EL[PTHREAD_NUM] = s->EL[1]
+#define SANITY(EL) if (s->EL[PTHREAD_NUM] == s->EL[1]) fprintf(stderr, #EL " changed!\n");
+
+static void setup_for_gc(GC_state s) {
+    assert(gcflag != -1 && gcflag != 1);
+    COPYIN(stackTop);
+    COPYIN(stackBottom);
+    COPYIN(stackLimit);
+    COPYIN(exnStack);
+    COPYIN(currentThread);
+    COPYIN(savedThread);
+    COPYIN(signalHandlerThread);
+    COPYIN(ffiOpArgsResPtr);
+}
+
+static void sanity_check_array(GC_state s) {
+    assert(gcflag != -1 && gcflag != 1);
+    SANITY(stackTop);
+    SANITY(stackBottom);
+    SANITY(stackLimit);
+    SANITY(exnStack);
+    SANITY(currentThread);
+    SANITY(savedThread);
+    SANITY(signalHandlerThread);
+    SANITY(ffiOpArgsResPtr);
+}
+
+static void finish_for_gc(GC_state s) {
+    assert(gcflag != -1 && gcflag != 1);
+sanity_check_array(s);
+    COPYOUT(stackTop);
+    COPYOUT(stackBottom);
+    COPYOUT(stackLimit);
+    COPYOUT(exnStack);
+    COPYOUT(currentThread);
+    COPYOUT(savedThread);
+    COPYOUT(signalHandlerThread);
+    COPYOUT(ffiOpArgsResPtr);
+}
+
 #define LOCKFLAG MYASSERT(int, pthread_mutex_lock(&gcflag_lock), ==, 0)
 #define UNLOCKFLAG MYASSERT(int, pthread_mutex_unlock(&gcflag_lock), ==, 0)
-#define REQUESTGC do { LOCKFLAG; gcflag = PTHREAD_NUM; UNLOCKFLAG; } while(0)
-#define COMPLETEGC do { LOCKFLAG; gcflag = 0; UNLOCKFLAG; } while(0)
+#define REQUESTGC do { LOCKFLAG; gcflag = PTHREAD_NUM; setup_for_gc(s); UNLOCKFLAG; } while(0)
+#define COMPLETEGC do { LOCKFLAG; finish_for_gc(s); gcflag = -1; UNLOCKFLAG; } while(0)
 
 __attribute__((noreturn))
 void *GCrunner(void *_s) {
@@ -145,7 +186,7 @@ void *GCrunner(void *_s) {
 		if (DEBUG)
 			fprintf(stderr, "%d] GCrunner: spinning\n", PTHREAD_NUM);
 
-		while (gcflag == 0) {
+		while (gcflag == -1) {
 			sched_yield();
 		}
 
@@ -207,7 +248,7 @@ void performGC (GC_state s,
     s->forceMajor = forceMajor;
     s->mayResize = mayResize;
 
-    while (gcflag) sched_yield();
+    while (gcflag > -1) sched_yield();
 
     if (DEBUG)
     	fprintf(stderr, "%d] performGC: requesting a GC\n", PTHREAD_NUM);
