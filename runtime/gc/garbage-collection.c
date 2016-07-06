@@ -125,7 +125,7 @@ static volatile int gcflag = -1;
 }
 
 #define COPYIN(EL) s->EL[1] = s->EL[PTHREAD_NUM]
-#define COPYOUT(EL) s->EL[PTHREAD_NUM] = s->EL[1]
+#define COPYOUT(EL) s->EL[PTHREAD_NUM] = s->EL[1]; s->EL[1] = 0
 #define SANITY(EL) if (s->EL[PTHREAD_NUM] == s->EL[1]) fprintf(stderr, #EL " changed!\n");
 
 static void setup_for_gc(GC_state s) {

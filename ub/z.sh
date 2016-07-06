@@ -13,7 +13,10 @@
           -w -m64 -o test2.0.i test2.0.c
 
 for i in 0 1 2 ; do 
-    gcc -o test2.${i}.o -c test2.${i}.i
+    sed 's/case \([0-9]*\):/case \1: {char *J="  !!!!!!!!  in case \1\\n";int JL=strlen(J);write(2,J,JL);}/' test2.${i}.i | \
+    sed 's/^\(L_[0-9]*\):/\1: {char *J="   !!!!!!!! at label \1\\n";int JL=strlen(J);write(2,J,JL);}/' > test2.${i}.I
+    mv test2.${i}.I test2.${i}.i
+    gcc -w -o test2.${i}.o -c test2.${i}.i
 done
 
       gcc -g -o test2 test2.?.o \
